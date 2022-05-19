@@ -1,0 +1,78 @@
+<script>
+/* Локализация datepicker */
+$.datepicker.regional['ru'] = {
+	closeText: 'Закрыть',
+	prevText: 'Предыдущий',
+	nextText: 'Следующий',
+	currentText: 'Сегодня',
+	monthNames: ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
+	monthNamesShort: ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'],
+	dayNames: ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'],
+	dayNamesShort: ['вск','пнд','втр','срд','чтв','птн','сбт'],
+	dayNamesMin: ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],
+	weekHeader: 'Не',
+	dateFormat: 'dd.mm.yy',
+	firstDay: 1,
+	isRTL: false,
+	showMonthAfterYear: false,
+	yearSuffix: ''
+};
+$.datepicker.setDefaults($.datepicker.regional['ru']);
+</script>
+
+<script> // см. описание Календарь jQuery UI Datepicker: https://snipp.ru/jquery/jquery-ui-datepicker
+$(function(){
+	var holidays = [ // список праздничных дат [день,месяц]
+		[31,12],
+		[1,1],
+		[2,1],
+		[3,1],
+		[7,1],
+		[8,1],
+		[9,1],
+		[23,2],
+		[8,3],
+		[1,5],
+		[9,5],
+		[12,6],
+		[4,11]
+	];
+$("#datepicker").datepicker({
+		minDate: startOrderDay(), // ближайший день заказа
+		maxDate: '+21d', // заказ можно сделать максимум на 21 день вперед
+		beforeShowDay: function noOrderHolidays(date) {
+		  //var date = new Date();
+		  var dayOfWeek = date.getDay();
+		  for (var i = 0; i < holidays.length; i++) {
+			if (holidays[i][0] == date.getDate() &&
+			  holidays[i][1] - 1 == date.getMonth()) { // если праздничный день, то доставки нет
+			  return [false];
+			}
+		  }
+		  if (dayOfWeek == 0 || dayOfWeek == 6) { // если выходной день, то доставки нет
+			return [false];
+		  } else { // иначе доставка есть
+			return [true];
+		  }
+		}
+	  });
+	
+		function startOrderDay() {  // ближайший день заказа
+		 var date = new Date();
+		 var dayOfWeek = date.getDay();
+ 		 var Hour = date.getHours();
+		 var Minutes = date.getMinutes();
+			if (dayOfWeek == 6) {  // если сегодня суббота, то ближайший день заказа - вторник
+			  return 3;
+			} else if (dayOfWeek == 0) {  // если сегодня воскресенье, то ближайший день заказа - вторник
+			  return 2;
+			} else if (dayOfWeek == 5 && Hour >= 17) {  // если сегодня пятница, но текущее время > 17-00, то ближайший день заказа - вторник
+			  return 4;
+			} else if (dayOfWeek >= 1 && dayOfWeek <= 4 && Hour >= 17) {  // если сегодня пятница, но текущее время > 17-00, то ближайший день заказа - вторник
+			  return 2;
+			} else { // иначе ближайший день заказа - завтра
+			  return 1;
+			}
+		}
+});
+</script>
